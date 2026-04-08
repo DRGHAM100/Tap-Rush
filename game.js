@@ -13,43 +13,42 @@ const config = {
     width: window.innerWidth,
     height: window.innerHeight,
     parent: 'game-container',
-    dom: { createContainer: true }, // لتفعيل أزرار HTML/CSS
-    scene: { preload, create, update },
+    dom: { createContainer: true },
+    // إعدادات الشاشة الكاملة للموبايل
     scale: {
-        mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH
-    }
+        mode: Phaser.Scale.ENVELOP, // يملأ الشاشة بالكامل
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        width: window.innerWidth,
+        height: window.innerHeight
+    },
+    scene: { preload, create, update }
 };
 
 new Phaser.Game(config);
 
 function preload() {
-    // تحميل الصوت
     this.load.audio('tap', 'https://actions.google.com/sounds/v1/cartoon/pop.ogg');
-    // إذا كان لديك لوغو باسم logo.png ضعه في مجلد assets
-    this.load.image('logo', 'assets/logo.jpeg'); 
 }
 
 function create() {
     let scene = this;
+    const screenWidth = scene.sys.game.config.width;
+    const screenHeight = scene.sys.game.config.height;
 
-    // --- شاشة البداية ---
     if (!gameStarted) {
         let bgStart = scene.add.graphics();
         bgStart.fillGradientStyle(0x0a0f1a, 0x0a0f1a, 0x1a2a6c, 0x1a2a6c, 1);
-        bgStart.fillRect(0, 0, config.width, config.height);
+        bgStart.fillRect(0, 0, screenWidth, screenHeight);
 
-        // نص العنوان (أو اللوغو)
-        scene.add.text(config.width/2, config.height/3, 'TAP RUSH', {
-            fontSize: '70px',
+        scene.add.text(screenWidth/2, screenHeight/3, 'TAP RUSH', {
+            fontSize: '12vw', // حجم خط متجاوب
             fontFamily: 'Arial Black',
             color: '#00f2ff'
-        }).setOrigin(0.5).setStroke('#0055ff', 10);
+        }).setOrigin(0.5).setStroke('#0055ff', 8);
 
-        // زر البداية بتصميم CSS
-        startBtn = scene.add.dom(config.width/2, config.height * 0.7, 'button', 
-            'padding: 15px 50px; font-size: 30px; background: linear-gradient(to bottom, #00f2ff, #0055ff); border: none; border-radius: 50px; color: white; cursor: pointer; box-shadow: 0 0 25px #00f2ff; font-weight: bold;', 
-            'START GAME');
+        startBtn = scene.add.dom(screenWidth/2, screenHeight * 0.7, 'button', 
+            'padding: 15px 40px; font-size: 24px; background: linear-gradient(to bottom, #00f2ff, #0055ff); border: none; border-radius: 50px; color: white; cursor: pointer; box-shadow: 0 0 20px #00f2ff; font-weight: bold; width: 200px;', 
+            'START');
         
         startBtn.addListener('click');
         startBtn.on('click', () => {
@@ -59,81 +58,74 @@ function create() {
         return;
     }
 
-    // --- خلفية اللعب (الستايل النيوني) ---
+    // خلفية اللعب
     let bg = scene.add.graphics();
     bg.fillStyle(0x0a0f1a, 1);
-    bg.fillRect(0, 0, config.width, config.height);
+    bg.fillRect(0, 0, screenWidth, screenHeight);
     
-    // رسم شبكة (Grid) خفيفة مثل التصاميم الاحترافية
     bg.lineStyle(1, 0x00f2ff, 0.1);
-    for(let i=0; i<config.width; i+=50) bg.lineBetween(i, 0, i, config.height);
-    for(let i=0; i<config.height; i+=50) bg.lineBetween(0, i, config.width, i);
+    for(let i=0; i<screenWidth; i+=40) bg.lineBetween(i, 0, i, screenHeight);
+    for(let i=0; i<screenHeight; i+=40) bg.lineBetween(0, i, screenWidth, i);
 
     score = 0;
     timeLeft = 15;
     gameOver = false;
 
-    // نصوص الواجهة (UI)
+    // نصوص الواجهة - أحجام متناسبة مع الموبايل
     const textStyle = { fontFamily: 'Arial Black', fontWeight: 'bold' };
-    scoreText = scene.add.text(config.width/2, 60, 'SCORE: 0', { ...textStyle, fontSize: '40px', color: '#00f2ff' }).setOrigin(0.5);
-    timerText = scene.add.text(config.width/2, 120, 'TIME: 15', { ...textStyle, fontSize: '30px', color: '#ffcc00' }).setOrigin(0.5);
-    highScoreText = scene.add.text(config.width/2, 170, 'BEST: ' + highScore, { ...textStyle, fontSize: '20px', color: '#00ff88' }).setOrigin(0.5);
+    scoreText = scene.add.text(screenWidth/2, 50, 'SCORE: 0', { ...textStyle, fontSize: '32px', color: '#00f2ff' }).setOrigin(0.5);
+    timerText = scene.add.text(screenWidth/2, 95, 'TIME: 15', { ...textStyle, fontSize: '24px', color: '#ffcc00' }).setOrigin(0.5);
+    highScoreText = scene.add.text(screenWidth/2, 130, 'BEST: ' + highScore, { ...textStyle, fontSize: '18px', color: '#00ff88' }).setOrigin(0.5);
 
-    // --- الدائرة وتأثير الوهج (حل مشكلة Shadow) ---
-    glow = scene.add.circle(config.width/2, config.height/2, 85, 0x00f2ff, 0.3); // التوهج
-    circle = scene.add.circle(config.width/2, config.height/2, 75, 0x00f2ff).setInteractive(); // الدائرة الأساسية
+    // --- تصغير حجم الدائرة (نصف القطر 40 بدل 75) ---
+    glow = scene.add.circle(screenWidth/2, screenHeight/2, 45, 0x00f2ff, 0.2);
+    circle = scene.add.circle(screenWidth/2, screenHeight/2, 40, 0x00f2ff).setInteractive();
 
-    // أنيميشن النبض (Pulse)
     scene.tweens.add({
         targets: [circle, glow],
-        scale: 1.1,
-        duration: 800,
+        scale: 1.15,
+        duration: 600,
         yoyo: true,
         repeat: -1
     });
 
-    // جزيئات الانفجار (Particles)
     particles = scene.add.particles(0, 0, null, {
-        speed: { min: -200, max: 200 },
-        scale: { start: 0.7, end: 0 },
+        speed: { min: -150, max: 150 },
+        scale: { start: 0.5, end: 0 },
         alpha: { start: 1, end: 0 },
-        lifespan: 600,
+        lifespan: 400,
         blendMode: 'ADD',
         tint: 0x00f2ff
     });
 
     tapSound = scene.sound.add('tap');
 
-    // --- منطق الضغط والتحرك ---
     circle.on('pointerdown', () => {
         if (!gameOver) {
             score++;
             scoreText.setText('SCORE: ' + score);
 
-            // تغيير المكان عشوائياً
-            let newX = Phaser.Math.Between(100, config.width - 100);
-            let newY = Phaser.Math.Between(250, config.height - 100); // تجنب النصوص في الأعلى
+            // مكان عشوائي جديد مع ضمان البقاء داخل حدود شاشة الموبايل
+            let newX = Phaser.Math.Between(50, screenWidth - 50);
+            let newY = Phaser.Math.Between(180, screenHeight - 80);
 
             circle.setPosition(newX, newY);
             glow.setPosition(newX, newY);
 
-            // تأثير بصري سريع
             particles.emitParticleAt(newX, newY);
             tapSound.play();
             
-            if (navigator.vibrate) navigator.vibrate(30);
+            if (navigator.vibrate) navigator.vibrate(25);
 
-            // أنيميشن عند الضغط
             scene.tweens.add({
                 targets: circle,
-                scale: 1.4,
-                duration: 100,
+                scale: 1.5,
+                duration: 80,
                 yoyo: true
             });
         }
     });
 
-    // --- المؤقت ---
     scene.time.addEvent({
         delay: 1000,
         loop: true,
@@ -153,9 +145,11 @@ function endGame(scene) {
     gameOver = true;
     circle.setVisible(false);
     glow.setVisible(false);
+    const screenWidth = scene.sys.game.config.width;
+    const screenHeight = scene.sys.game.config.height;
 
-    scene.add.text(config.width/2, config.height/2 - 100, "GAME OVER", {
-        fontSize: '64px', fontFamily: 'Arial Black', color: '#ff0055'
+    scene.add.text(screenWidth/2, screenHeight/2 - 50, "GAME OVER", {
+        fontSize: '48px', fontFamily: 'Arial Black', color: '#ff0055'
     }).setOrigin(0.5);
 
     if (score > highScore) {
@@ -163,10 +157,9 @@ function endGame(scene) {
         localStorage.setItem("highScore", score);
     }
 
-    // زر إعادة اللعب
-    let restart = scene.add.dom(config.width/2, config.height/2 + 80, 'button', 
-        'padding: 15px 40px; font-size: 25px; background: #00ff88; border: none; border-radius: 10px; cursor: pointer; font-weight: bold;', 
-        'PLAY AGAIN');
+    let restart = scene.add.dom(screenWidth/2, screenHeight/2 + 80, 'button', 
+        'padding: 12px 30px; font-size: 22px; background: #00ff88; border: none; border-radius: 10px; cursor: pointer; font-weight: bold;', 
+        'RETRY');
     
     restart.addListener('click');
     restart.on('click', () => scene.scene.restart());

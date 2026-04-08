@@ -2,173 +2,172 @@ let score = 0;
 let timeLeft = 15;
 let gameOver = false;
 let highScore = localStorage.getItem("highScore") || 0;
-let combo = 0;
 let gameStarted = false;
 
-let scoreText, timerText, comboText, highScoreText;
-let circle, particles, tapSound;
+let scoreText, timerText, highScoreText;
+let circle, glow, particles, tapSound;
 let startBtn;
 
 const config = {
-  type: Phaser.AUTO,
-  width: window.innerWidth,
-  height: window.innerHeight,
-  parent: 'game-container',
-  scene: { preload, create, update },
-  dom: { createContainer: true }, // تفعيل الـ DOM لاستخدام الـ CSS
-  scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH
-  }
+    type: Phaser.AUTO,
+    width: window.innerWidth,
+    height: window.innerHeight,
+    parent: 'game-container',
+    dom: { createContainer: true }, // لتفعيل أزرار HTML/CSS
+    scene: { preload, create, update },
+    scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+    }
 };
 
 new Phaser.Game(config);
 
 function preload() {
-  this.load.audio('tap', 'https://actions.google.com/sounds/v1/cartoon/pop.ogg');
-  // تأكد من وضع صورة اللوغو التي صممناها في هذا المسار
-  this.load.image('logo', 'assets/logo.png'); 
+    // تحميل الصوت
+    this.load.audio('tap', 'https://actions.google.com/sounds/v1/cartoon/pop.ogg');
+    // إذا كان لديك لوغو باسم logo.png ضعه في مجلد assets
+    this.load.image('logo', 'assets/logo.jpeg'); 
 }
 
 function create() {
-  let scene = this;
+    let scene = this;
 
-  if (!gameStarted) {
-    // خلفية شاشة البداية (تطابق ألوان الصورة)
-    let bgStart = scene.add.graphics();
-    bgStart.fillGradientStyle(0x0a0f1a, 0x0a0f1a, 0x1a2a6c, 0x1a2a6c, 1);
-    bgStart.fillRect(0, 0, config.width, config.height);
+    // --- شاشة البداية ---
+    if (!gameStarted) {
+        let bgStart = scene.add.graphics();
+        bgStart.fillGradientStyle(0x0a0f1a, 0x0a0f1a, 0x1a2a6c, 0x1a2a6c, 1);
+        bgStart.fillRect(0, 0, config.width, config.height);
 
-    // إضافة اللوغو (إذا كان متوفراً)
-    if (scene.textures.exists('logo')) {
-        scene.add.image(config.width/2, config.height/3, 'logo').setScale(0.5);
-    } else {
+        // نص العنوان (أو اللوغو)
         scene.add.text(config.width/2, config.height/3, 'TAP RUSH', {
-            fontSize: '64px',
+            fontSize: '70px',
             fontFamily: 'Arial Black',
             color: '#00f2ff'
-        }).setOrigin(0.5).setStroke('#0055ff', 8);
+        }).setOrigin(0.5).setStroke('#0055ff', 10);
+
+        // زر البداية بتصميم CSS
+        startBtn = scene.add.dom(config.width/2, config.height * 0.7, 'button', 
+            'padding: 15px 50px; font-size: 30px; background: linear-gradient(to bottom, #00f2ff, #0055ff); border: none; border-radius: 50px; color: white; cursor: pointer; box-shadow: 0 0 25px #00f2ff; font-weight: bold;', 
+            'START GAME');
+        
+        startBtn.addListener('click');
+        startBtn.on('click', () => {
+            gameStarted = true;
+            scene.scene.restart();
+        });
+        return;
     }
 
-    // زر البداية بتصميم عصري
-    startBtn = scene.add.dom(config.width/2, config.height * 0.7, 'button', 
-        'padding: 15px 40px; font-size: 30px; background: linear-gradient(to bottom, #00f2ff, #0055ff); border: none; border-radius: 50px; color: white; cursor: pointer; box-shadow: 0 0 20px #00f2ff;', 
-        'TAP TO START');
+    // --- خلفية اللعب (الستايل النيوني) ---
+    let bg = scene.add.graphics();
+    bg.fillStyle(0x0a0f1a, 1);
+    bg.fillRect(0, 0, config.width, config.height);
     
-    startBtn.addListener('click');
-    startBtn.on('click', () => {
-      gameStarted = true;
-      scene.scene.restart();
+    // رسم شبكة (Grid) خفيفة مثل التصاميم الاحترافية
+    bg.lineStyle(1, 0x00f2ff, 0.1);
+    for(let i=0; i<config.width; i+=50) bg.lineBetween(i, 0, i, config.height);
+    for(let i=0; i<config.height; i+=50) bg.lineBetween(0, i, config.width, i);
+
+    score = 0;
+    timeLeft = 15;
+    gameOver = false;
+
+    // نصوص الواجهة (UI)
+    const textStyle = { fontFamily: 'Arial Black', fontWeight: 'bold' };
+    scoreText = scene.add.text(config.width/2, 60, 'SCORE: 0', { ...textStyle, fontSize: '40px', color: '#00f2ff' }).setOrigin(0.5);
+    timerText = scene.add.text(config.width/2, 120, 'TIME: 15', { ...textStyle, fontSize: '30px', color: '#ffcc00' }).setOrigin(0.5);
+    highScoreText = scene.add.text(config.width/2, 170, 'BEST: ' + highScore, { ...textStyle, fontSize: '20px', color: '#00ff88' }).setOrigin(0.5);
+
+    // --- الدائرة وتأثير الوهج (حل مشكلة Shadow) ---
+    glow = scene.add.circle(config.width/2, config.height/2, 85, 0x00f2ff, 0.3); // التوهج
+    circle = scene.add.circle(config.width/2, config.height/2, 75, 0x00f2ff).setInteractive(); // الدائرة الأساسية
+
+    // أنيميشن النبض (Pulse)
+    scene.tweens.add({
+        targets: [circle, glow],
+        scale: 1.1,
+        duration: 800,
+        yoyo: true,
+        repeat: -1
     });
-    return;
-  }
 
-  // خلفية اللعب (Dark Cyber Grid)
-  let bg = scene.add.graphics();
-  bg.fillStyle(0x0a0f1a, 1);
-  bg.fillRect(0, 0, config.width, config.height);
-  
-  // رسم شبكة خفيفة (Grid) مثل الصورة
-  bg.lineStyle(1, 0x00f2ff, 0.1);
-  for(let i=0; i<config.width; i+=40) bg.lineBetween(i, 0, i, config.height);
-  for(let i=0; i<config.height; i+=40) bg.lineBetween(0, i, config.width, i);
+    // جزيئات الانفجار (Particles)
+    particles = scene.add.particles(0, 0, null, {
+        speed: { min: -200, max: 200 },
+        scale: { start: 0.7, end: 0 },
+        alpha: { start: 1, end: 0 },
+        lifespan: 600,
+        blendMode: 'ADD',
+        tint: 0x00f2ff
+    });
 
-  score = 0;
-  timeLeft = 15;
-  combo = 0;
-  gameOver = false;
+    tapSound = scene.sound.add('tap');
 
-  // UI Text (تنسيق يشبه الصورة)
-  const textStyle = { fontFamily: 'Arial', fontWeight: 'bold' };
-  scoreText = scene.add.text(config.width/2, 50, 'Score: 0', { ...textStyle, fontSize: '32px', color: '#00f2ff' }).setOrigin(0.5);
-  timerText = scene.add.text(config.width/2, 100, 'Time: 15', { ...textStyle, fontSize: '28px', color: '#ffcc00' }).setOrigin(0.5);
-  highScoreText = scene.add.text(config.width/2, 140, 'Best: ' + highScore, { ...textStyle, fontSize: '22px', color: '#00ff88' }).setOrigin(0.5);
+    // --- منطق الضغط والتحرك ---
+    circle.on('pointerdown', () => {
+        if (!gameOver) {
+            score++;
+            scoreText.setText('SCORE: ' + score);
 
-  // حل مشكلة الظل: نستخدم Graphics لرسم دائرة مع "توهج" (Glow)
-  circle = scene.add.circle(config.width/2, config.height/2, 80, 0x00f2ff).setInteractive();
-  
-  // إضافة تأثير التوهج الخارجي يدوياً
-  let glow = scene.add.circle(config.width/2, config.height/2, 85, 0x00f2ff, 0.3);
+            // تغيير المكان عشوائياً
+            let newX = Phaser.Math.Between(100, config.width - 100);
+            let newY = Phaser.Math.Between(250, config.height - 100); // تجنب النصوص في الأعلى
 
-  // Pulse animation للـ Circle والـ Glow
-  scene.tweens.add({
-    targets: [circle, glow],
-    scale: 1.1,
-    duration: 800,
-    yoyo: true,
-    repeat: -1
-  });
+            circle.setPosition(newX, newY);
+            glow.setPosition(newX, newY);
 
-  // Particles (تعديل الألوان لتناسب النيون)
-  particles = scene.add.particles(0, 0, null, {
-    speed: { min: -200, max: 200 },
-    scale: { start: 0.8, end: 0 },
-    alpha: { start: 1, end: 0 },
-    lifespan: 500,
-    blendMode: 'ADD',
-    tint: 0x00f2ff
-  });
+            // تأثير بصري سريع
+            particles.emitParticleAt(newX, newY);
+            tapSound.play();
+            
+            if (navigator.vibrate) navigator.vibrate(30);
 
-  tapSound = scene.sound.add('tap');
+            // أنيميشن عند الضغط
+            scene.tweens.add({
+                targets: circle,
+                scale: 1.4,
+                duration: 100,
+                yoyo: true
+            });
+        }
+    });
 
-  circle.on('pointerdown', () => {
-    if (!gameOver) {
-      score++;
-      combo++;
-      timeLeft += 0.4;
-
-      scoreText.setText('Score: ' + score);
-      
-      // تغيير اللون عند الضغط
-      circle.setFillStyle(0xffffff);
-      scene.time.delayedCall(50, () => circle.setFillStyle(0x00f2ff));
-
-      particles.emitParticleAt(circle.x, circle.y);
-      tapSound.play();
-      if (navigator.vibrate) navigator.vibrate(30);
-
-      scene.tweens.add({
-        targets: circle,
-        scale: 1.3,
-        duration: 100,
-        yoyo: true
-      });
-    }
-  });
-
-  // Timer
-  scene.time.addEvent({
-    delay: 1000,
-    loop: true,
-    callback: () => {
-      if (!gameOver) {
-        timeLeft--;
-        timerText.setText('Time: ' + Math.max(0, Math.floor(timeLeft)));
-        if (timeLeft <= 0) endGame(scene);
-      }
-    }
-  });
-}
-
-function endGame(scene) {
-  gameOver = true;
-  circle.destroy();
-
-  scene.add.text(config.width/2, config.height/2 - 100, "GAME OVER", {
-    fontSize: '60px', color: '#ff0055', fontWeight: 'bold'
-  }).setOrigin(0.5);
-
-  if (score > highScore) {
-    highScore = score;
-    localStorage.setItem("highScore", score);
-  }
-
-  let restart = scene.add.dom(config.width/2, config.height/2 + 50, 'button', 
-    'padding: 10px 30px; font-size: 25px; background: #00ff88; border-radius: 10px;', 
-    'PLAY AGAIN');
-  
-  restart.addListener('click');
-  restart.on('click', () => scene.scene.restart());
+    // --- المؤقت ---
+    scene.time.addEvent({
+        delay: 1000,
+        loop: true,
+        callback: () => {
+            if (!gameOver) {
+                timeLeft--;
+                timerText.setText('TIME: ' + Math.max(0, timeLeft));
+                if (timeLeft <= 0) endGame(scene);
+            }
+        }
+    });
 }
 
 function update() {}
+
+function endGame(scene) {
+    gameOver = true;
+    circle.setVisible(false);
+    glow.setVisible(false);
+
+    scene.add.text(config.width/2, config.height/2 - 100, "GAME OVER", {
+        fontSize: '64px', fontFamily: 'Arial Black', color: '#ff0055'
+    }).setOrigin(0.5);
+
+    if (score > highScore) {
+        highScore = score;
+        localStorage.setItem("highScore", score);
+    }
+
+    // زر إعادة اللعب
+    let restart = scene.add.dom(config.width/2, config.height/2 + 80, 'button', 
+        'padding: 15px 40px; font-size: 25px; background: #00ff88; border: none; border-radius: 10px; cursor: pointer; font-weight: bold;', 
+        'PLAY AGAIN');
+    
+    restart.addListener('click');
+    restart.on('click', () => scene.scene.restart());
+}

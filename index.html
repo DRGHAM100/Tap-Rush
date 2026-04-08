@@ -1,14 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>Tap Rush</title>
-  <link rel="stylesheet" href="style.css">
-<script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tap Rush</title>
+<style>
+  body { margin:0; background:#111; display:flex; justify-content:center; align-items:center; height:100vh; }
+  #game-container { width: 400px; height: 600px; }
+</style>
 </head>
 <body>
-  <div id="game-container"></div>
-  <script src="game.js"></script>
+<div id="game-container"></div>
+
+<!-- 1️⃣ Phaser -->
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+<script src="game.js"></script>
 </body>
 </html>

@@ -1,0 +1,40 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;  /* توسيط أفقي */
+  align-items: center;      /* توسيط عمودي */
+  background: #000;
+  overflow: hidden;
+  font-family: sans-serif;
+}
+
+#game-container {
+  width: 100%;
+  max-width: 480px;
+  height: 100%;
+  position: relative;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #111;
+}
+
+#startBtn {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  background: red;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  border-radius: 8px;
+  user-select: none;
+}

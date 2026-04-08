@@ -1,40 +1,60 @@
+/* Reset & Body */
 html, body {
   margin: 0;
   padding: 0;
-  height: 100%;
   width: 100%;
-  display: flex;
-  justify-content: center;  /* توسيط أفقي */
-  align-items: center;      /* توسيط عمودي */
+  height: 100%;
   background: #000;
+  font-family: 'Arial', sans-serif;
   overflow: hidden;
-  font-family: sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
+/* Game container */
 #game-container {
   width: 100%;
-  max-width: 480px;
   height: 100%;
+  max-width: 480px;
+  max-height: 720px;
   position: relative;
 }
 
-canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-  background: #111;
-}
-
-#startBtn {
+/* START & PLAY AGAIN buttons */
+.button-text {
   position: absolute;
-  bottom: 20px;
+  bottom: 100px;
   left: 50%;
   transform: translateX(-50%);
-  padding: 10px 20px;
-  background: red;
-  color: #fff;
-  font-size: 20px;
+  padding: 12px 20px;
+  font-size: 32px;
+  color: #00ffff;
+  background-color: #000;
+  border-radius: 10px;
   cursor: pointer;
-  border-radius: 8px;
   user-select: none;
+  text-align: center;
 }
+
+/* Floating messages (combo / bonus / game over) */
+.floating-text {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  font-size: 24px;
+  color: #fff;
+  pointer-events: none;
+}
+
+/* UI Text (Score, Timer, Combo, Best) */
+.ui-text {
+  position: absolute;
+  left: 10px;
+  font-weight: bold;
+}
+
+#score { top: 10px; font-size: 26px; color: #fff; }
+#timer { top: 50px; font-size: 24px; color: #0ff; }
+#combo { top: 90px; font-size: 22px; color: #ff0; }
+#highscore { top: 130px; font-size: 20px; color: #0f0; }

@@ -26,27 +26,48 @@ function preload() {
 function create() {
     let scene = this;
 
-    // Facebook Init
-    if (typeof FBInstant !== "undefined") {
-        FBInstant.initializeAsync().then(() => FBInstant.startGameAsync());
-    }
-
-    // Background
+    // Background gradient 3D look
     let bg = scene.add.graphics();
-    bg.fillGradientStyle(0x1a2a6c, 0xb21f1f, 0xfdbb2d, 0x000000, 1);
-    bg.fillRect(0, 0, 400, 600);
+    bg.fillGradientStyle(0x0f2027, 0x203a43, 0x2c5364, 0x000000, 1);
+    bg.fillRect(0, 0, config.width, config.height);
 
-    // UI
-    scoreText = scene.add.text(130, 20, 'Score: 0', { fontSize: '26px', color: '#fff' });
-    timerText = scene.add.text(130, 60, 'Time: 15', { fontSize: '24px', color: '#0ff' });
-    highScoreText = scene.add.text(110, 100, 'Best: ' + highScore, { fontSize: '20px', color: '#0f0' });
+    // UI - Score / Time / Best بالوسط
+    scoreText = scene.add.text(config.width/2, 50, 'Score: 0', { 
+        fontFamily: 'Arial Black', fontSize: '32px', color:'#00ffff', 
+        stroke: '#000', strokeThickness:4 
+    }).setOrigin(0.5);
 
-    // Circle
-    circle = scene.add.circle(200, 350, 80, 0x00ffcc).setInteractive();
-    scene.tweens.add({ targets: circle, scale: 1.1, duration: 700, yoyo: true, repeat: -1 });
+    timerText = scene.add.text(config.width/2, 100, 'Time: 15', { 
+        fontFamily: 'Arial Black', fontSize: '28px', color:'#ffcc00', 
+        stroke: '#000', strokeThickness:4
+    }).setOrigin(0.5);
+
+    highScoreText = scene.add.text(config.width/2, 150, 'Best: ' + highScore, { 
+        fontFamily: 'Arial Black', fontSize: '24px', color:'#00ff00', 
+        stroke: '#000', strokeThickness:4
+    }).setOrigin(0.5);
+
+    // Circle 3D look
+    circle = scene.add.circle(config.width/2, config.height/2+50, 80, 0x00ffcc)
+        .setStrokeStyle(6, 0xffffff)
+        .setInteractive();
+
+    scene.tweens.add({
+        targets: circle,
+        scale: 1.1,
+        duration: 700,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+    });
 
     // Particles
-    particles = scene.add.particles(0, 0, null, { speed: { min:-150,max:150 }, scale:{start:0.6,end:0}, lifespan:400, quantity:8 });
+    particles = scene.add.particles(0, 0, null, { 
+        speed: { min:-200, max:200 }, 
+        scale:{start:0.8,end:0}, 
+        lifespan:500, 
+        quantity:10 
+    });
 
     // Sound
     tapSound = scene.sound.add('tap');
@@ -54,7 +75,7 @@ function create() {
     // START Button
     if (!gameStarted) {
         startBtn = scene.add.text(config.width/2, config.height-150, 'START', {
-            fontSize: '32px', color:'#00ffff', backgroundColor:'#000', padding:{x:20,y:10}
+            fontSize: '36px', fontFamily:'Arial Black', color:'#00ffff', backgroundColor:'#000', padding:{x:20,y:10}
         }).setOrigin(0.5).setInteractive();
 
         startBtn.on('pointerdown', () => {
@@ -66,31 +87,27 @@ function create() {
     }
 
     // Reset variables
-    score = 0; timeLeft=15; gameOver=false;
+    score=0; timeLeft=15; gameOver=false;
 
-    // Tap Event
-    circle.on('pointerdown', () => {
+    // Tap Event - move circle randomly
+    circle.on('pointerdown', ()=>{
         if(!gameOver){
             score++;
-            timeLeft += 0.4;
+            timeLeft+=0.4;
             scoreText.setText('Score: '+score);
 
             // Move circle to random position
             let x = Phaser.Math.Between(80, config.width-80);
-            let y = Phaser.Math.Between(150, config.height-80);
+            let y = Phaser.Math.Between(200, config.height-100);
             circle.setPosition(x,y);
 
-            // Random color
             circle.setFillStyle(Phaser.Display.Color.RandomRGB().color);
-
-            // Particles & sound
             particles.emitParticleAt(x,y);
             tapSound.play();
             if(navigator.vibrate) navigator.vibrate(30);
 
-            // Bonus time every 10 points
-            if(score % 10 === 0){ 
-                timeLeft += 2; 
+            if(score%10===0){
+                timeLeft+=2;
                 showText(scene,"🔥 BONUS +2s");
             }
         }
@@ -98,7 +115,8 @@ function create() {
 
     // Timer
     scene.time.addEvent({
-        delay:1000, loop:true,
+        delay:1000,
+        loop:true,
         callback:()=>{ 
             if(!gameOver){ 
                 timeLeft--; 
@@ -113,28 +131,25 @@ function update(){}
 
 function endGame(scene){
     gameOver=true;
-    showText(scene,"GAME OVER",200);
+    showText(scene,"GAME OVER",config.height/2-50);
 
     if(score>highScore){
         highScore=score;
         localStorage.setItem("highScore",score);
-        showText(scene,"🏆 NEW RECORD!",250);
+        showText(scene,"🏆 NEW RECORD!",config.height/2);
     }
 
-    showText(scene,"Score: "+score,300);
+    showText(scene,"Score: "+score,config.height/2+50);
 
-    let restart = scene.add.text(130,360,'PLAY AGAIN',{
-        fontSize:'26px', color:'#00ffff', backgroundColor:'#000', padding:{x:20,y:10}
-    }).setInteractive();
+    let restart = scene.add.text(config.width/2, config.height-150,'PLAY AGAIN',{
+        fontSize:'32px', fontFamily:'Arial Black', color:'#00ffff', backgroundColor:'#000', padding:{x:20,y:10}
+    }).setOrigin(0.5).setInteractive();
     restart.on('pointerdown',()=>scene.scene.restart());
-
-    // Facebook Leaderboard
-    if(typeof FBInstant!=="undefined"){
-        FBInstant.getLeaderboardAsync('highscores').then(lb=>lb.setScoreAsync(score));
-    }
 }
 
-function showText(scene,msg,y=220){
-    let txt = scene.add.text(100,y,msg,{ fontSize:'24px', color:'#fff' });
-    scene.tweens.add({ targets:txt, y:y-50, alpha:0, duration:800, onComplete:()=>txt.destroy() });
+function showText(scene,msg,y){
+    let txt = scene.add.text(config.width/2, y, msg, {
+        fontFamily:'Arial Black', fontSize:'28px', color:'#fff', stroke:'#000', strokeThickness:4
+    }).setOrigin(0.5);
+    scene.tweens.add({ targets:txt, y:y-50, alpha:0, duration:1000, onComplete:()=>txt.destroy() });
 }

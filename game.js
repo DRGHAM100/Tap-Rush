@@ -26,47 +26,54 @@ function preload() {
 function create() {
     let scene = this;
 
-    // Background gradient 3D look
+    // Background Gradient + Glow
     let bg = scene.add.graphics();
-    bg.fillGradientStyle(0x0f2027, 0x203a43, 0x2c5364, 0x000000, 1);
+    bg.fillGradientStyle(0x0f2027, 0x203a43, 0x2c5364, 0x0f2027, 1);
     bg.fillRect(0, 0, config.width, config.height);
 
-    // UI - Score / Time / Best بالوسط
+    // UI Text 3D look
     scoreText = scene.add.text(config.width/2, 50, 'Score: 0', { 
-        fontFamily: 'Arial Black', fontSize: '32px', color:'#00ffff', 
-        stroke: '#000', strokeThickness:4 
+        fontFamily: 'Orbitron', fontSize: '36px', color:'#00ffff', 
+        stroke: '#000', strokeThickness:5
     }).setOrigin(0.5);
 
     timerText = scene.add.text(config.width/2, 100, 'Time: 15', { 
-        fontFamily: 'Arial Black', fontSize: '28px', color:'#ffcc00', 
-        stroke: '#000', strokeThickness:4
+        fontFamily: 'Orbitron', fontSize: '32px', color:'#ffcc00', 
+        stroke: '#000', strokeThickness:5
     }).setOrigin(0.5);
 
     highScoreText = scene.add.text(config.width/2, 150, 'Best: ' + highScore, { 
-        fontFamily: 'Arial Black', fontSize: '24px', color:'#00ff00', 
-        stroke: '#000', strokeThickness:4
+        fontFamily: 'Orbitron', fontSize: '28px', color:'#00ff00', 
+        stroke: '#000', strokeThickness:5
     }).setOrigin(0.5);
 
     // Circle 3D look
-    circle = scene.add.circle(config.width/2, config.height/2+50, 80, 0x00ffcc)
-        .setStrokeStyle(6, 0xffffff)
+    circle = scene.add.circle(config.width/2, config.height/2+50, 80)
+        .setFillStyle(0x00ffcc)
+        .setStrokeStyle(8, 0xffffff)
         .setInteractive();
+
+    circle.setShadow(5, 5, '#000', 10, true, true);
 
     scene.tweens.add({
         targets: circle,
         scale: 1.1,
-        duration: 700,
+        duration: 800,
         yoyo: true,
         repeat: -1,
         ease: 'Sine.easeInOut'
     });
 
-    // Particles
-    particles = scene.add.particles(0, 0, null, { 
-        speed: { min:-200, max:200 }, 
-        scale:{start:0.8,end:0}, 
-        lifespan:500, 
-        quantity:10 
+    // Particles Advanced
+    particles = scene.add.particles(null);
+    let emitter = particles.createEmitter({
+        x: circle.x,
+        y: circle.y,
+        speed: { min:-300, max:300 },
+        lifespan: 600,
+        quantity: 8,
+        scale: { start:0.6, end:0 },
+        blendMode: 'ADD'
     });
 
     // Sound
@@ -75,7 +82,7 @@ function create() {
     // START Button
     if (!gameStarted) {
         startBtn = scene.add.text(config.width/2, config.height-150, 'START', {
-            fontSize: '36px', fontFamily:'Arial Black', color:'#00ffff', backgroundColor:'#000', padding:{x:20,y:10}
+            fontSize: '40px', fontFamily:'Orbitron', color:'#00ffff', backgroundColor:'#000', padding:{x:25,y:15}
         }).setOrigin(0.5).setInteractive();
 
         startBtn.on('pointerdown', () => {
@@ -93,27 +100,25 @@ function create() {
     circle.on('pointerdown', ()=>{
         if(!gameOver){
             score++;
-            timeLeft+=0.4;
             scoreText.setText('Score: '+score);
 
-            // Move circle to random position
+            // Move circle smoothly
             let x = Phaser.Math.Between(80, config.width-80);
             let y = Phaser.Math.Between(200, config.height-100);
-            circle.setPosition(x,y);
+            scene.tweens.add({ targets: circle, x:x, y:y, duration:200, ease:'Power2' });
 
-            circle.setFillStyle(Phaser.Display.Color.RandomRGB().color);
-            particles.emitParticleAt(x,y);
+            // Random Gradient Color
+            let c = Phaser.Display.Color.RandomRGB();
+            circle.setFillStyle(c.color);
+
+            // Particles & Sound
+            emitter.explode(10, circle.x, circle.y);
             tapSound.play();
             if(navigator.vibrate) navigator.vibrate(30);
-
-            if(score%10===0){
-                timeLeft+=2;
-                showText(scene,"🔥 BONUS +2s");
-            }
         }
     });
 
-    // Timer
+    // Timer - ثابت
     scene.time.addEvent({
         delay:1000,
         loop:true,
@@ -142,14 +147,14 @@ function endGame(scene){
     showText(scene,"Score: "+score,config.height/2+50);
 
     let restart = scene.add.text(config.width/2, config.height-150,'PLAY AGAIN',{
-        fontSize:'32px', fontFamily:'Arial Black', color:'#00ffff', backgroundColor:'#000', padding:{x:20,y:10}
+        fontSize:'36px', fontFamily:'Orbitron', color:'#00ffff', backgroundColor:'#000', padding:{x:25,y:15}
     }).setOrigin(0.5).setInteractive();
     restart.on('pointerdown',()=>scene.scene.restart());
 }
 
 function showText(scene,msg,y){
     let txt = scene.add.text(config.width/2, y, msg, {
-        fontFamily:'Arial Black', fontSize:'28px', color:'#fff', stroke:'#000', strokeThickness:4
+        fontFamily:'Orbitron', fontSize:'32px', color:'#fff', stroke:'#000', strokeThickness:5
     }).setOrigin(0.5);
     scene.tweens.add({ targets:txt, y:y-50, alpha:0, duration:1000, onComplete:()=>txt.destroy() });
 }

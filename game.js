@@ -26,7 +26,7 @@ function preload() {
 function create() {
     let scene = this;
 
-    // Background Gradient + Glow
+    // Background Gradient
     let bg = scene.add.graphics();
     bg.fillGradientStyle(0x0f2027, 0x203a43, 0x2c5364, 0x0f2027, 1);
     bg.fillRect(0, 0, config.width, config.height);
@@ -47,30 +47,30 @@ function create() {
         stroke: '#000', strokeThickness:5
     }).setOrigin(0.5);
 
-    // Circle 3D look
-    circle = scene.add.circle(config.width/2, config.height/2+50, 80)
+    // Circle أصغر
+    circle = scene.add.circle(config.width/2, config.height/2+50, 60) // كان 80
         .setFillStyle(0x00ffcc)
-        .setStrokeStyle(8, 0xffffff)
+        .setStrokeStyle(6, 0xffffff)
         .setInteractive();
 
     circle.setShadow(5, 5, '#000', 10, true, true);
 
     scene.tweens.add({
         targets: circle,
-        scale: 1.1,
+        scale: 1.05, // أقل شوي
         duration: 800,
         yoyo: true,
         repeat: -1,
         ease: 'Sine.easeInOut'
     });
 
-    // Particles Advanced
+    // Particles
     particles = scene.add.particles(null);
     let emitter = particles.createEmitter({
         x: circle.x,
         y: circle.y,
-        speed: { min:-300, max:300 },
-        lifespan: 600,
+        speed: { min:-200, max:200 },
+        lifespan: 500,
         quantity: 8,
         scale: { start:0.6, end:0 },
         blendMode: 'ADD'
@@ -103,11 +103,11 @@ function create() {
             scoreText.setText('Score: '+score);
 
             // Move circle smoothly
-            let x = Phaser.Math.Between(80, config.width-80);
+            let x = Phaser.Math.Between(60, config.width-60);
             let y = Phaser.Math.Between(200, config.height-100);
             scene.tweens.add({ targets: circle, x:x, y:y, duration:200, ease:'Power2' });
 
-            // Random Gradient Color
+            // Random color
             let c = Phaser.Display.Color.RandomRGB();
             circle.setFillStyle(c.color);
 
@@ -124,8 +124,8 @@ function create() {
         loop:true,
         callback:()=>{ 
             if(!gameOver){ 
-                timeLeft--; 
-                timerText.setText('Time: '+Math.floor(timeLeft)); 
+                timeLeft = Math.max(timeLeft-1, 0); // ما يقل عن 0
+                timerText.setText('Time: '+timeLeft); 
                 if(timeLeft<=0) endGame(scene); 
             }
         }

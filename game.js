@@ -1,5 +1,3 @@
-// === بداية game.js ===
-
 let score = 0;
 let timeLeft = 15;
 let gameOver = false;
@@ -10,25 +8,26 @@ let scoreText, timerText, highScoreText;
 let circle, glow, particles, tapSound;
 let startBtn;
 
-// 🟡 دالة البداية للـ Phaser
-function startPhaserGame() {
-    const config = {
-        type: Phaser.AUTO,
+// 🟡 متغير للـ Progress Bar
+let progressBar, progressFill;
+
+const config = {
+    type: Phaser.AUTO,
+    width: window.innerWidth,
+    height: window.innerHeight,
+    parent: 'game-container',
+    dom: { createContainer: true },
+    scale: {
+        mode: Phaser.Scale.ENVELOP,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
         width: window.innerWidth,
-        height: window.innerHeight,
-        parent: 'game-container',
-        dom: { createContainer: true },
-        scale: {
-            mode: Phaser.Scale.ENVELOP,
-            autoCenter: Phaser.Scale.CENTER_BOTH
-        },
-        scene: { preload, create, update }
-    };
+        height: window.innerHeight
+    },
+    scene: { preload, create, update }
+};
 
-    new Phaser.Game(config);
-}
+new Phaser.Game(config);
 
-// === Phaser Scene ===
 function preload() {
     this.load.audio('tap', 'https://actions.google.com/sounds/v1/cartoon/pop.ogg');
 }
@@ -39,7 +38,7 @@ function create() {
     const screenHeight = scene.sys.game.config.height;
 
     if (!gameStarted) {
-        // شاشة البداية
+        // شاشة البداية...
         let bgStart = scene.add.graphics();
         bgStart.fillGradientStyle(0x0a0f1a, 0x0a0f1a, 0x1a2a6c, 0x1a2a6c, 1);
         bgStart.fillRect(0, 0, screenWidth, screenHeight);
@@ -79,7 +78,7 @@ function create() {
         return;
     }
 
-    // --- خلفية اللعب ---
+    // --- خلفية اللعب
     let bg = scene.add.graphics();
     bg.fillStyle(0x0a0f1a, 1);
     bg.fillRect(0, 0, screenWidth, screenHeight);
@@ -101,6 +100,24 @@ function create() {
     scene.tweens.add({ targets: scoreText, y: 50, duration: 600, ease: 'Back.easeOut', delay: 100 });
     scene.tweens.add({ targets: timerText, y: 95, duration: 600, ease: 'Back.easeOut', delay: 300 });
     scene.tweens.add({ targets: highScoreText, y: 130, duration: 600, ease: 'Back.easeOut', delay: 500 });
+
+    // 🟡 إضافة Progress Bar
+    let progressContainer = document.createElement('div');
+    progressContainer.style.width = '90%';
+    progressContainer.style.height = '10px';
+    progressContainer.style.background = '#ccc';
+    progressContainer.style.position = 'absolute';
+    progressContainer.style.top = '150px';
+    progressContainer.style.left = '5%';
+    progressContainer.style.borderRadius = '5px';
+    // document.body.appendChild(progressContainer);
+
+    progressFill = document.createElement('div');
+    progressFill.style.width = '0%';
+    progressFill.style.height = '100%';
+    progressFill.style.background = '#ffcc00';
+    progressFill.style.borderRadius = '5px';
+    //progressContainer.appendChild(progressFill);
 
     // --- الدائرة والوهج ---
     glow = scene.add.circle(screenWidth/2, screenHeight/2, 45, 0x00f2ff, 0);
@@ -176,6 +193,9 @@ function create() {
                 timeLeft--;
                 timerText.setText('TIME: ' + Math.max(0, timeLeft));
 
+                // 🟡 تحديث Progress Bar
+                //progressFill.style.width = ((15 - timeLeft) / 15 * 100) + "%";
+
                 if (timeLeft <= 5 && timeLeft > 0) {
                     timerText.setColor('#ff4444');
                     scene.tweens.add({ targets: timerText, scale: 1.2, duration: 100, yoyo: true });
@@ -221,7 +241,7 @@ function endGame(scene) {
         });
     }
 
-    // زر Retry
+    // --- زر Retry ---
     let restart = scene.add.dom(screenWidth/2, screenHeight + 100, 'button', 
         'padding: 12px 30px; font-size: 22px; background: #00ff88; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; opacity: 0;', 
         'RETRY');
@@ -238,7 +258,7 @@ function endGame(scene) {
     restart.addListener('click');
     restart.on('click', () => scene.scene.restart());
 
-    // زر Share Score
+    // 🟡 زر Share Score بعد Retry
     let shareBtn = scene.add.dom(screenWidth/2, screenHeight + 180, 'button', 
         'padding: 12px 30px; font-size: 22px; margin-top: 1rem; background: #0055ff; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; opacity: 0;',
         'SHARE SCORE'
@@ -260,5 +280,3 @@ function endGame(scene) {
         window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${quote}`, "_blank");
     });
 }
-
-// === نهاية game.js ===

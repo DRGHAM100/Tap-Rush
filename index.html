@@ -6,39 +6,40 @@
 <title>Tap Rush</title>
 <style>
   body { margin:0; background:#111; display:flex; justify-content:center; align-items:center; height:100vh; }
-  #game-container { width: 400px; height: 600px; }
+  #game-container { width: 100%; height: 100%; }
 </style>
 </head>
 <body>
+
 <div id="game-container"></div>
 
-<!-- 1️⃣ Phaser -->
-<script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
-<script src="https://connect.facebook.net/en_US/fbinstant.6.3.js"></script>
-<script src="game.js"></script>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8086180749377604"
-     crossorigin="anonymous"></script>
-  
-<script>
-  window.fbAsyncInit = function() {
-    FB.init({
-      appId      : '{your-app-id}',
-      cookie     : true,
-      xfbml      : true,
-      version    : '{api-version}'
-    });
-      
-    FB.AppEvents.logPageView();   
-      
-  };
 
-  (function(d, s, id){
-     var js, fjs = d.getElementsByTagName(s)[0];
-     if (d.getElementById(id)) {return;}
-     js = d.createElement(s); js.id = id;
-     js.src = "https://connect.facebook.net/en_US/sdk.js";
-     fjs.parentNode.insertBefore(js, fjs);
-   }(document, 'script', 'facebook-jssdk'));
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+
+
+<script src="https://connect.facebook.net/en_US/fbinstant.6.3.js"></script>
+
+<script src="game.js"></script>
+
+<script>
+
+  FBInstant.initializeAsync().then(function() {
+      FBInstant.setLoadingProgress(100);  
+
+      FBInstant.startGameAsync().then(function() {
+          startGame(); 
+      });
+  });
+
+  function startGame() {
+ 
+      if (typeof startPhaserGame === 'function') {
+          startPhaserGame(); 
+      } else {
+          console.log("تأكد أن اللعبة تبدأ بعد startGame()");
+      }
+  }
 </script>
+
 </body>
 </html>

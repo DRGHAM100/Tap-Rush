@@ -111,7 +111,7 @@ function create() {
     progressContainer.style.top = '150px';
     progressContainer.style.left = '5%';
     progressContainer.style.borderRadius = '5px';
-    document.body.appendChild(progressContainer);
+    // document.body.appendChild(progressContainer);
 
     progressFill = document.createElement('div');
     progressFill.style.width = '0%';

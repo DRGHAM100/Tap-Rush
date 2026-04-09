@@ -118,7 +118,7 @@ function create() {
     progressFill.style.height = '100%';
     progressFill.style.background = '#ffcc00';
     progressFill.style.borderRadius = '5px';
-    progressContainer.appendChild(progressFill);
+    //progressContainer.appendChild(progressFill);
 
     // --- الدائرة والوهج ---
     glow = scene.add.circle(screenWidth/2, screenHeight/2, 45, 0x00f2ff, 0);
@@ -195,7 +195,7 @@ function create() {
                 timerText.setText('TIME: ' + Math.max(0, timeLeft));
 
                 // 🟡 تحديث Progress Bar
-                progressFill.style.width = ((15 - timeLeft) / 15 * 100) + "%";
+                //progressFill.style.width = ((15 - timeLeft) / 15 * 100) + "%";
 
                 if (timeLeft <= 5 && timeLeft > 0) {
                     timerText.setColor('#ff4444');
@@ -261,7 +261,7 @@ function endGame(scene) {
 
     // 🟡 زر Share Score بعد Retry
     let shareBtn = scene.add.dom(screenWidth/2, screenHeight + 180, 'button', 
-        'padding: 12px 30px; font-size: 22px; background: #0055ff; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; opacity: 0;',
+        'padding: 12px 30px; font-size: 22px; margin-top: 1rem; background: #0055ff; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; opacity: 0;',
         'SHARE SCORE'
     );
 

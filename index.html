@@ -19,30 +19,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
 
-
-<script src="https://connect.facebook.net/en_US/fbinstant.6.3.js"></script>
+<script src="https://connect.facebook.net/en_US/fbinstant.8.0.js"></script>
 
 <script src="game.js"></script>
-
-<script>
-
-  FBInstant.initializeAsync().then(function() {
-      FBInstant.setLoadingProgress(100);  
-
-      FBInstant.startGameAsync().then(function() {
-          startGame(); 
-      });
-  });
-
-  function startGame() {
- 
-      if (typeof startPhaserGame === 'function') {
-          startPhaserGame(); 
-      } else {
-          console.log("تأكد أن اللعبة تبدأ بعد startGame()");
-      }
-  }
-</script>
 
 </body>
 </html>
